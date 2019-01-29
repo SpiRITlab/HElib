@@ -66,121 +66,121 @@ class FHESecKey;
  * @brief A handle, describing the secret-key element that "matches" a part, of the form s^r(X^t).
  **/
 class SKHandle {
-  long powerOfS, powerOfX, secretKeyID;
+    long powerOfS, powerOfX, secretKeyID;
 
 public:
-  friend class Ctxt;
+    friend class Ctxt;
 
-  SKHandle(long newPowerOfS=0, long newPowerOfX=1, long newSecretKeyID=0)  
-  {
-    powerOfS = newPowerOfS;
-    powerOfX = newPowerOfX;
-    secretKeyID = newSecretKeyID;
-  }
-
-  //! @brief Set powerOfS=powerOfX=1
-  void setBase(long newSecretKeyID=-1) 
-  {
-    powerOfS = 1;
-    powerOfX = 1;
-    if (newSecretKeyID >= 0) secretKeyID = newSecretKeyID;
-  }
- 
-  //! @brief Is powerOfS==powerOfX==1?
-  bool isBase(long ofKeyID=0) const
-  {
-    // If ofKeyID<0, only check that this is base of some key,
-    // otherwise check that this is base of the given key
-    return powerOfS == 1 && powerOfX == 1 && 
-      (ofKeyID<0 || secretKeyID == ofKeyID);
-  }
-
-  //! @brief Set powerOfS=0, powerOfX=1
-  void setOne(long newSecretKeyID=-1) 
-  {
-    powerOfS = 0;
-    powerOfX = 1;
-    if (newSecretKeyID >= 0) secretKeyID = newSecretKeyID;
-  }
-
-  //! @brief Is powerOfS==0?
-  bool isOne() const
-  {
-    return powerOfS == 0;
-  }
-
-  bool operator==(const SKHandle& other) const
-  {
-    if (powerOfS==0 && other.powerOfS==0) return true;
-    return powerOfS==other.powerOfS &&
-	   powerOfX==other.powerOfX &&
-           secretKeyID==other.secretKeyID;
-  }
-
-  bool operator!=(const SKHandle& other) const {return !(*this==other);}
-
-  /* access functions */
-
-  long getPowerOfS() const { return powerOfS; }
-  long getPowerOfX() const { return powerOfX; }
-  long getSecretKeyID() const { return secretKeyID; }
-
-  /**
-   * @brief Computes the "product" of two handles.
-   *
-   * The key-ID's and powers of X must match, else an error state arises,
-   * which is represented using a key-ID of -1 and returning false. Also,
-   * note that inputs may alias outputs.
-   * 
-   * To detremine if the resulting handle canbe re-liearized using
-   * some key-switchingmatrices from the public key, use the method
-   * pubKey.haveKeySWmatrix(handle,handle.secretKeyID), from the class
-   * FHEPubKey in FHE.h
-  */
-  bool mul(const SKHandle& a, const SKHandle& b) 
-  {
-    // If either of the inputs is one, the output equals to the other input
-    if (a.isOne()) {
-      *this = b;
-      return (b.secretKeyID >= 0);
-    }
-    if (b.isOne()) {
-      *this = a;
-      return (a.secretKeyID >= 0);
+    SKHandle(long newPowerOfS=0, long newPowerOfX=1, long newSecretKeyID=0)
+    {
+        powerOfS = newPowerOfS;
+        powerOfX = newPowerOfX;
+        secretKeyID = newSecretKeyID;
     }
 
-    if (a.secretKeyID == -1 || b.secretKeyID == -1) {
-      secretKeyID = -1; // -1 will be used to indicate an "error state"
-      return false;
+    //! @brief Set powerOfS=powerOfX=1
+    void setBase(long newSecretKeyID=-1)
+    {
+        powerOfS = 1;
+        powerOfX = 1;
+        if (newSecretKeyID >= 0) secretKeyID = newSecretKeyID;
     }
 
-    if (a.secretKeyID != b.secretKeyID) {
-      secretKeyID = -1; 
-      return false;
+    //! @brief Is powerOfS==powerOfX==1?
+    bool isBase(long ofKeyID=0) const
+    {
+        // If ofKeyID<0, only check that this is base of some key,
+        // otherwise check that this is base of the given key
+        return powerOfS == 1 && powerOfX == 1 &&
+               (ofKeyID<0 || secretKeyID == ofKeyID);
     }
 
-    if (a.powerOfX != b.powerOfX) {
-      secretKeyID = -1;
-      return false;
+    //! @brief Set powerOfS=0, powerOfX=1
+    void setOne(long newSecretKeyID=-1)
+    {
+        powerOfS = 0;
+        powerOfX = 1;
+        if (newSecretKeyID >= 0) secretKeyID = newSecretKeyID;
     }
 
-    secretKeyID = a.secretKeyID;
-    powerOfX = a.powerOfX;
-    powerOfS = a.powerOfS + b.powerOfS;
-    return true;
-  }
+    //! @brief Is powerOfS==0?
+    bool isOne() const
+    {
+        return powerOfS == 0;
+    }
 
-  friend std::istream& operator>>(std::istream& s, SKHandle& handle);
+    bool operator==(const SKHandle& other) const
+    {
+        if (powerOfS==0 && other.powerOfS==0) return true;
+        return powerOfS==other.powerOfS &&
+               powerOfX==other.powerOfX &&
+               secretKeyID==other.secretKeyID;
+    }
 
-  // Raw IO
-  void read(std::istream& str);
-  void write(std::ostream& str) const;
+    bool operator!=(const SKHandle& other) const {return !(*this==other);}
+
+    /* access functions */
+
+    long getPowerOfS() const { return powerOfS; }
+    long getPowerOfX() const { return powerOfX; }
+    long getSecretKeyID() const { return secretKeyID; }
+
+    /**
+     * @brief Computes the "product" of two handles.
+     *
+     * The key-ID's and powers of X must match, else an error state arises,
+     * which is represented using a key-ID of -1 and returning false. Also,
+     * note that inputs may alias outputs.
+     *
+     * To detremine if the resulting handle canbe re-liearized using
+     * some key-switchingmatrices from the public key, use the method
+     * pubKey.haveKeySWmatrix(handle,handle.secretKeyID), from the class
+     * FHEPubKey in FHE.h
+    */
+    bool mul(const SKHandle& a, const SKHandle& b)
+    {
+        // If either of the inputs is one, the output equals to the other input
+        if (a.isOne()) {
+            *this = b;
+            return (b.secretKeyID >= 0);
+        }
+        if (b.isOne()) {
+            *this = a;
+            return (a.secretKeyID >= 0);
+        }
+
+        if (a.secretKeyID == -1 || b.secretKeyID == -1) {
+            secretKeyID = -1; // -1 will be used to indicate an "error state"
+            return false;
+        }
+
+        if (a.secretKeyID != b.secretKeyID) {
+            secretKeyID = -1;
+            return false;
+        }
+
+        if (a.powerOfX != b.powerOfX) {
+            secretKeyID = -1;
+            return false;
+        }
+
+        secretKeyID = a.secretKeyID;
+        powerOfX = a.powerOfX;
+        powerOfS = a.powerOfS + b.powerOfS;
+        return true;
+    }
+
+    friend std::istream& operator>>(std::istream& s, SKHandle& handle);
+
+    // Raw IO
+    void read(std::istream& str);
+    void write(std::ostream& str) const;
 
 };
 inline std::ostream& operator<<(std::ostream& s, const SKHandle& handle)
 {
-  return s << "[" << handle.getPowerOfS()    << " " << handle.getPowerOfX()
-	   << " " << handle.getSecretKeyID() << "]";
+    return s << "[" << handle.getPowerOfS()    << " " << handle.getPowerOfX()
+             << " " << handle.getSecretKeyID() << "]";
 }
 
 /**
@@ -192,30 +192,30 @@ inline std::ostream& operator<<(std::ostream& s, const SKHandle& handle)
  **/
 class CtxtPart: public DoubleCRT {
 public:
-  //! @brief The handle is a public data member
-  SKHandle skHandle; // The secret-key polynomial corresponding to this part
+    //! @brief The handle is a public data member
+    SKHandle skHandle; // The secret-key polynomial corresponding to this part
 
-  bool operator==(const CtxtPart& other) const;
-  bool operator!=(const CtxtPart& other) const {return !(*this==other);}
+    bool operator==(const CtxtPart& other) const;
+    bool operator!=(const CtxtPart& other) const {return !(*this==other);}
 
-  // Constructors
+    // Constructors
 
-  CtxtPart(const FHEcontext& _context, const IndexSet& s): 
-    DoubleCRT(_context,s) { skHandle.setOne(); }
+    CtxtPart(const FHEcontext& _context, const IndexSet& s):
+            DoubleCRT(_context,s) { skHandle.setOne(); }
 
-  CtxtPart(const FHEcontext& _context, const IndexSet& s, 
-	   const SKHandle& otherHandle): 
-    DoubleCRT(_context,s), skHandle(otherHandle) {}
+    CtxtPart(const FHEcontext& _context, const IndexSet& s,
+             const SKHandle& otherHandle):
+            DoubleCRT(_context,s), skHandle(otherHandle) {}
 
-  // Copy constructors from the base class
-  explicit
-  CtxtPart(const DoubleCRT& other): DoubleCRT(other) { skHandle.setOne(); }
+    // Copy constructors from the base class
+    explicit
+    CtxtPart(const DoubleCRT& other): DoubleCRT(other) { skHandle.setOne(); }
 
-  CtxtPart(const DoubleCRT& other, const SKHandle& otherHandle): 
-    DoubleCRT(other), skHandle(otherHandle) {}
+    CtxtPart(const DoubleCRT& other, const SKHandle& otherHandle):
+            DoubleCRT(other), skHandle(otherHandle) {}
 
-  void read(std::istream& str); 
-  void write(std::ostream& str);
+    void read(std::istream& str);
+    void write(std::ostream& str);
 
 };
 std::istream& operator>>(std::istream& s, CtxtPart& p);
@@ -250,385 +250,347 @@ const ZeroCtxtLike_type ZeroCtxtLike = ZeroCtxtLike_type();
  *
  **/
 class Ctxt {
-  friend class FHEPubKey;
-  friend class FHESecKey;
-  friend class BasicAutomorphPrecon;
+    friend class FHEPubKey;
+    friend class FHESecKey;
+    friend class BasicAutomorphPrecon;
 
-  const FHEcontext& context; // points to the parameters of this FHE instance
-  const FHEPubKey& pubKey;   // points to the public encryption key;
-  std::vector<CtxtPart> parts;    // the ciphertexe parts
-  IndexSet primeSet; // the primes relative to which the parts are defined
-  long ptxtSpace;    // plaintext space for this ciphertext (either p or p^r)
+    const FHEcontext& context; // points to the parameters of this FHE instance
+    const FHEPubKey& pubKey;   // points to the public encryption key;
+    std::vector<CtxtPart> parts;    // the ciphertexe parts
+    IndexSet primeSet; // the primes relative to which the parts are defined
+    long ptxtSpace;    // plaintext space for this ciphertext (either p or p^r)
 
-  NTL::xdouble noiseBound;  // a high-probability bound on the the noise magnitude
+    NTL::xdouble noiseBound;  // a high-probability bound on the the noise magnitude
 
-  long intFactor;    // an integer factor to multiply by on decryption (for BGV)
-  NTL::xdouble ratFactor; // rational factor to divide on decryption (for CKKS)
+    long intFactor;    // an integer factor to multiply by on decryption (for BGV)
+    NTL::xdouble ratFactor; // rational factor to divide on decryption (for CKKS)
 
-  // Create a tensor product of c1,c2. It is assumed that *this,c1,c2
-  // are defined relative to the same set of primes and plaintext space,
-  // and that *this DOES NOT point to the same object as c1,c2
-  void tensorProduct(const Ctxt& c1, const Ctxt& c2);
+    // Create a tensor product of c1,c2. It is assumed that *this,c1,c2
+    // are defined relative to the same set of primes and plaintext space,
+    // and that *this DOES NOT point to the same object as c1,c2
+    void tensorProduct(const Ctxt& c1, const Ctxt& c2);
 
-  // Add/subtract a ciphertext part to/from a ciphertext. These are private
-  // methods, they cannot update the noiseBound so they must be called
-  // from a procedure that will eventually update that estimate.
-  Ctxt& operator-=(const CtxtPart& part) { subPart(part); return *this; }
-  Ctxt& operator+=(const CtxtPart& part) { addPart(part); return *this; }
+    // Add/subtract a ciphertext part to/from a ciphertext. These are private
+    // methods, they cannot update the noiseBound so they must be called
+    // from a procedure that will eventually update that estimate.
+    Ctxt& operator-=(const CtxtPart& part) { subPart(part); return *this; }
+    Ctxt& operator+=(const CtxtPart& part) { addPart(part); return *this; }
 
-  // Procedureal versions with additional parameter
-  void subPart(const CtxtPart& part, bool matchPrimeSet=false)
-  { subPart(part, part.skHandle, matchPrimeSet); }
-  void addPart(const CtxtPart& part, bool matchPrimeSet=false)
-  { addPart(part, part.skHandle, matchPrimeSet); }
+    // Procedureal versions with additional parameter
+    void subPart(const CtxtPart& part, bool matchPrimeSet=false)
+    { subPart(part, part.skHandle, matchPrimeSet); }
+    void addPart(const CtxtPart& part, bool matchPrimeSet=false)
+    { addPart(part, part.skHandle, matchPrimeSet); }
 
-  void subPart(const DoubleCRT& part, 
-	       const SKHandle& handle, bool matchPrimeSet=false) 
-  { addPart(part, handle, matchPrimeSet, true); }
-  void addPart(const DoubleCRT& part, const SKHandle& handle, 
-	       bool matchPrimeSet=false, bool negative=false);
+    void subPart(const DoubleCRT& part,
+                 const SKHandle& handle, bool matchPrimeSet=false)
+    { addPart(part, handle, matchPrimeSet, true); }
+    void addPart(const DoubleCRT& part, const SKHandle& handle,
+                 bool matchPrimeSet=false, bool negative=false);
 
-  // Takes as arguments a ciphertext-part p relative to s' and a key-switching
-  // matrix W = W[s'->s], use W to switch p relative to (1,s), and add the
-  // result to *this.
-  void keySwitchPart(const CtxtPart& p, const KeySwitch& W);
+    // Takes as arguments a ciphertext-part p relative to s' and a key-switching
+    // matrix W = W[s'->s], use W to switch p relative to (1,s), and add the
+    // result to *this.
+    void keySwitchPart(const CtxtPart& p, const KeySwitch& W);
 
-  // interenal procedure used in key-swtching
-  void keySwitchDigits(const KeySwitch& W, std::vector<DoubleCRT>& digits);
+    // interenal procedure used in key-swtching
+    void keySwitchDigits(const KeySwitch& W, std::vector<DoubleCRT>& digits);
 
-  long getPartIndexByHandle(const SKHandle& hanle) const {
-    for (size_t i=0; i<parts.size(); i++) 
-      if (parts[i].skHandle==hanle) return i;
-    return -1;
-  }
+    long getPartIndexByHandle(const SKHandle& hanle) const {
+        for (size_t i=0; i<parts.size(); i++)
+            if (parts[i].skHandle==hanle) return i;
+        return -1;
+    }
 
-  // Sanity-check: Check that prime-set is "valid", i.e. that it 
-  // contains either all the special primes or none of them
-  bool verifyPrimeSet() const;
+    // Sanity-check: Check that prime-set is "valid", i.e. that it
+    // contains either all the special primes or none of them
+    bool verifyPrimeSet() const;
 
-  // A private assignment method that does not check equality of context or
-  // public key, this is needed when we copy the pubEncrKey member between
-  // different public keys.
-  Ctxt& privateAssign(const Ctxt& other);
+    // A private assignment method that does not check equality of context or
+    // public key, this is needed when we copy the pubEncrKey member between
+    // different public keys.
+    Ctxt& privateAssign(const Ctxt& other);
 
-  // explicitly multiply intFactor by e, which should be
-  // in the interval [0, ptxtSpace)
-  void mulIntFactor(long e);
- 
+    // explicitly multiply intFactor by e, which should be
+    // in the interval [0, ptxtSpace)
+    void mulIntFactor(long e);
+
 public:
-  //__attribute__((deprecated))
-  explicit
-  Ctxt(const FHEPubKey& newPubKey, long newPtxtSpace=0); // constructor
+    //__attribute__((deprecated))
+    explicit
+    Ctxt(const FHEPubKey& newPubKey, long newPtxtSpace=0); // constructor
 
-  Ctxt(ZeroCtxtLike_type, const Ctxt& ctxt); 
+    Ctxt(ZeroCtxtLike_type, const Ctxt& ctxt);
     // constructs a zero ciphertext with same public key and 
     // plaintext space as ctxt
 
-  //! Dummy encryption, just encodes the plaintext in a Ctxt object
-  //! If provided, size should be a high-probability bound
-  //! on the L-infty norm of the canonical embedding
-  void DummyEncrypt(const NTL::ZZX& ptxt, double size=-1.0);
+    //! Dummy encryption, just encodes the plaintext in a Ctxt object
+    //! If provided, size should be a high-probability bound
+    //! on the L-infty norm of the canonical embedding
+    void DummyEncrypt(const NTL::ZZX& ptxt, double size=-1.0);
 
-  Ctxt& operator=(const Ctxt& other) {  // public assignment operator
-    assert(&context == &other.context);
-    assert (&pubKey == &other.pubKey);
-    return privateAssign(other);
-  }
+    Ctxt& operator=(const Ctxt& other) {  // public assignment operator
+        assert(&context == &other.context);
+        assert (&pubKey == &other.pubKey);
+        return privateAssign(other);
+    }
 
-  bool operator==(const Ctxt& other) const { return equalsTo(other); }
-  bool operator!=(const Ctxt& other) const { return !equalsTo(other); }
+    bool operator==(const Ctxt& other) const { return equalsTo(other); }
+    bool operator!=(const Ctxt& other) const { return !equalsTo(other); }
 
-  // a procedural variant with an additional parameter
-  bool equalsTo(const Ctxt& other, bool comparePkeys=true) const;
+    // a procedural variant with an additional parameter
+    bool equalsTo(const Ctxt& other, bool comparePkeys=true) const;
 
-  // Encryption and decryption are done by the friends FHE[Pub|Sec]Key
+    // Encryption and decryption are done by the friends FHE[Pub|Sec]Key
 
-  //! @name Ciphertext arithmetic
-  ///@{
-  void negate();
+    //! @name Ciphertext arithmetic
+    ///@{
+    void negate();
 
- // Add/subtract aonther ciphertext
-  Ctxt& operator+=(const Ctxt& other) { addCtxt(other); return *this; }
-  Ctxt& operator-=(const Ctxt& other) { addCtxt(other,true); return *this; }
-  void addCtxt(const Ctxt& other, bool negative=false);
+    // Add/subtract aonther ciphertext
+    Ctxt& operator+=(const Ctxt& other) { addCtxt(other); return *this; }
+    Ctxt& operator-=(const Ctxt& other) { addCtxt(other,true); return *this; }
+    void addCtxt(const Ctxt& other, bool negative=false);
 
-  void multLowLvl(const Ctxt& other, bool destructive=false); // Multiply by aonther ciphertext
-  Ctxt& operator*=(const Ctxt& other){  multLowLvl(other); return *this; }
-  void automorph(long k); // Apply automorphism F(X) -> F(X^k) (gcd(k,m)=1)
-  Ctxt& operator>>=(long k) { automorph(k); return *this; }
-  void complexConj();     // Complex conjugate, same as automorph(m-1)
+    void multLowLvl(const Ctxt& other, bool destructive=false); // Multiply by aonther ciphertext
+    Ctxt& operator*=(const Ctxt& other){  multLowLvl(other); return *this; }
+    void automorph(long k); // Apply automorphism F(X) -> F(X^k) (gcd(k,m)=1)
+    Ctxt& operator>>=(long k) { automorph(k); return *this; }
+    void complexConj();     // Complex conjugate, same as automorph(m-1)
 
-  //! @brief automorphism with re-lienarization
-  void smartAutomorph(long k);
-  // Apply F(X)->F(X^k) followed by re-liearization. The automorphism is
-  // possibly evaluated via a sequence of steps, to ensure that we can
-  // re-linearize the result of every step.
+    //! @brief automorphism with re-lienarization
+    void smartAutomorph(long k);
+    // Apply F(X)->F(X^k) followed by re-liearization. The automorphism is
+    // possibly evaluated via a sequence of steps, to ensure that we can
+    // re-linearize the result of every step.
 
 
-  //! @brief applies the automorphsim p^j using smartAutomorphism
-  void frobeniusAutomorph(long j);
+    //! @brief applies the automorphsim p^j using smartAutomorphism
+    void frobeniusAutomorph(long j);
 
-  //! Add a constant polynomial. 
-  //! If provided, size should be a high-probability bound
-  //! on the L-infty norm of the canonical embedding
-  //! Otherwise, a bound based on the assumption that the coefficients
-  //! are uniformly and independently distributed over
-  //! [-ptxtSpace/2, ptxtSpace/2].
-  //! Otherwise, size should be a high-prob	
-  void addConstant(const DoubleCRT& dcrt, double size=-1.0);
-  void addConstant(const NTL::ZZX& poly, double size=-1.0)
-  { addConstant(DoubleCRT(poly,context,primeSet),size); }
-  void addConstant(const NTL::ZZ& c);
-  //! add a rational number in the form a/b, a,b are long
-  void addConstantCKKS(std::pair</*numerator=*/long,/*denominator=*/long>);
-  void addConstantCKKS(double x) {
-    addConstantCKKS(rationalApprox(x, /*denomBound=*/1<<getContext().alMod.getR()));
-  }
-  void addConstantCKKS(const DoubleCRT& dcrt,
-                       NTL::xdouble size=NTL::xdouble(-1.0),
-                       NTL::xdouble factor=NTL::xdouble(0.0));
-  void addConstantCKKS(const NTL::ZZX& poly,
-                       NTL::xdouble size=NTL::xdouble(-1.0),
-                       NTL::xdouble factor=NTL::xdouble(0.0));
-  void addConstantCKKS(const NTL::ZZ& c);
+    //! Add a constant polynomial.
+    //! If provided, size should be a high-probability bound
+    //! on the L-infty norm of the canonical embedding
+    //! Otherwise, a bound based on the assumption that the coefficients
+    //! are uniformly and independently distributed over
+    //! [-ptxtSpace/2, ptxtSpace/2].
+    //! Otherwise, size should be a high-prob
+    void addConstant(const DoubleCRT& dcrt, double size=-1.0);
+    void addConstant(const NTL::ZZX& poly, double size=-1.0)
+    { addConstant(DoubleCRT(poly,context,primeSet),size); }
+    void addConstant(const NTL::ZZ& c);
+    //! add a rational number in the form a/b, a,b are long
+    void addConstantCKKS(std::pair</*numerator=*/long,/*denominator=*/long>);
+    void addConstantCKKS(double x);
+    void addConstantCKKS(const DoubleCRT& dcrt,
+                         NTL::xdouble size=NTL::xdouble(-1.0),
+                         NTL::xdouble factor=NTL::xdouble(0.0));
+    void addConstantCKKS(const NTL::ZZX& poly,
+                         NTL::xdouble size=NTL::xdouble(-1.0),
+                         NTL::xdouble factor=NTL::xdouble(0.0));
+    void addConstantCKKS(const NTL::ZZ& c);
 
-  //! Multiply-by-constant. If the size is not given, we use
-  //! phi(m)*ptxtSpace^2 as the default value.
-  void multByConstant(const DoubleCRT& dcrt, double size=-1.0);
-  void multByConstant(const NTL::ZZX& poly, double size=-1.0);
-  void multByConstant(const zzX& poly, double size=-1.0);
-  void multByConstant(const NTL::ZZ& c);
+    //! Multiply-by-constant. If the size is not given, we use
+    //! phi(m)*ptxtSpace^2 as the default value.
+    void multByConstant(const DoubleCRT& dcrt, double size=-1.0);
+    void multByConstant(const NTL::ZZX& poly, double size=-1.0);
+    void multByConstant(const zzX& poly, double size=-1.0);
+    void multByConstant(const NTL::ZZ& c);
 
-  //! multiply by a rational number in the form a/b, a,b are long
-  void multByConstantCKKS(std::pair</*numerator=*/long,/*denominator=*/long>);
-  void multByConstantCKKS(double x);
+    //! multiply by a rational number in the form a/b, a,b are long
+    void multByConstantCKKS(std::pair</*numerator=*/long,/*denominator=*/long>);
+    void multByConstantCKKS(double x);
 
-  void multByConstantCKKS(const DoubleCRT& dcrt,
-                          NTL::xdouble size=NTL::xdouble(-1.0),
-                          NTL::ZZ factor=NTL::ZZ::zero());
-  void multByConstantCKKS(const NTL::ZZX& poly,
-                          NTL::xdouble size=NTL::xdouble(-1.0),
-                          NTL::ZZ factor=NTL::ZZ::zero());
+    void multByConstantCKKS(const DoubleCRT& dcrt,
+                            NTL::xdouble size=NTL::xdouble(-1.0),
+                            NTL::ZZ factor=NTL::ZZ::zero());
+    void multByConstantCKKS(const NTL::ZZX& poly,
+                            NTL::xdouble size=NTL::xdouble(-1.0),
+                            NTL::ZZ factor=NTL::ZZ::zero());
 
-  //! Convenience method: XOR and nXOR with arbitrary plaintext space:
-  //! a xor b = a+b-2ab = a + (1-2a)*b,
-  //! a nxor b = 1-a-b+2ab = (b-1)(2a-1)+a
-  void xorConstant(const DoubleCRT& poly, double size=-1.0)
-  {
-    DoubleCRT tmp = poly;
-    tmp *= -2;
-    tmp += 1; // tmp = 1-2*poly
-    multByConstant(tmp);
-    addConstant(poly);
-  }
-  void xorConstant(const NTL::ZZX& poly, double size=-1.0)
-  { xorConstant(DoubleCRT(poly,context,primeSet),size); }
+    //! Convenience method: XOR and nXOR with arbitrary plaintext space:
+    //! a xor b = a+b-2ab = a + (1-2a)*b,
+    //! a nxor b = 1-a-b+2ab = (b-1)(2a-1)+a
+    void xorConstant(const DoubleCRT& poly, double size=-1.0)
+    {
+        DoubleCRT tmp = poly;
+        tmp *= -2;
+        tmp += 1; // tmp = 1-2*poly
+        multByConstant(tmp);
+        addConstant(poly);
+    }
+    void xorConstant(const NTL::ZZX& poly, double size=-1.0)
+    { xorConstant(DoubleCRT(poly,context,primeSet),size); }
 
-  void nxorConstant(const DoubleCRT& poly, double size=-1.0)
-  {
-    DoubleCRT tmp = poly;
-    tmp *= 2;
-    tmp -= 1;                // 2a-1
-    addConstant(NTL::to_ZZX(-1L));// b11
-    multByConstant(tmp);     // (b-1)(2a-1)
-    addConstant(poly);       // (b-1)(2a-1)+a = 1-a-b+2ab
-  }
-  void nxorConstant(const NTL::ZZX& poly, double size=-1.0)
-  { nxorConstant(DoubleCRT(poly,context,primeSet),size); }
+    void nxorConstant(const DoubleCRT& poly, double size=-1.0)
+    {
+        DoubleCRT tmp = poly;
+        tmp *= 2;
+        tmp -= 1;                // 2a-1
+        addConstant(NTL::to_ZZX(-1L));// b11
+        multByConstant(tmp);     // (b-1)(2a-1)
+        addConstant(poly);       // (b-1)(2a-1)+a = 1-a-b+2ab
+    }
+    void nxorConstant(const NTL::ZZX& poly, double size=-1.0)
+    { nxorConstant(DoubleCRT(poly,context,primeSet),size); }
 
-  
-  //! Divide a cipehrtext by p, for plaintext space p^r, r>1. It is assumed
-  //! that the ciphertext encrypts a polynomial which is zero mod p. If this
-  //! is not the case then the result will not be a valid ciphertext anymore.
-  //! As a side-effect, the plaintext space is reduced from p^r to p^{r-1}.
-  void divideByP();
 
-  //! Mulitply ciphretext by p^e, for plaintext space p^r. This also has
-  //! the side-effect of increasing the plaintext space to p^{r+e}.
-  void multByP(long e=1)
-  {
-    long p2e = NTL::power_long(context.zMStar.getP(), e);
-    ptxtSpace *= p2e;
-    multByConstant(NTL::to_ZZ(p2e));
-  }
+    //! Divide a cipehrtext by p, for plaintext space p^r, r>1. It is assumed
+    //! that the ciphertext encrypts a polynomial which is zero mod p. If this
+    //! is not the case then the result will not be a valid ciphertext anymore.
+    //! As a side-effect, the plaintext space is reduced from p^r to p^{r-1}.
+    void divideByP();
 
-  // For backward compatibility
-  void divideBy2();
-  void extractBits(std::vector<Ctxt>& bits, long nBits2extract=0);
+    //! Mulitply ciphretext by p^e, for plaintext space p^r. This also has
+    //! the side-effect of increasing the plaintext space to p^{r+e}.
+    void multByP(long e=1);
 
-  // Higher-level multiply routines
-  void multiplyBy(const Ctxt& other);
-  void multiplyBy2(const Ctxt& other1, const Ctxt& other2);
-  void square() { multiplyBy(*this); }
-  void cube() { multiplyBy2(*this, *this); }
+    // For backward compatibility
+    void divideBy2();
+    void extractBits(std::vector<Ctxt>& bits, long nBits2extract=0);
 
-  //! @brief raise ciphertext to some power
-  void power(long e);         // in polyEval.cpp
+    // Higher-level multiply routines
+    void multiplyBy(const Ctxt& other);
+    void multiplyBy2(const Ctxt& other1, const Ctxt& other2);
+    void square() { multiplyBy(*this); }
+    void cube() { multiplyBy2(*this, *this); }
 
-  ///@}
+    //! @brief raise ciphertext to some power
+    void power(long e);         // in polyEval.cpp
 
-  //! @name Ciphertext maintenance
-  ///@{
+    ///@}
 
-  //! The number of digits needed, and added noise effect, of
-  //! key-switching one ciphertext part
-  std::pair<long, NTL::xdouble>
+    //! @name Ciphertext maintenance
+    ///@{
+
+    //! The number of digits needed, and added noise effect, of
+    //! key-switching one ciphertext part
+    std::pair<long, NTL::xdouble>
     computeKSNoise(long partIdx, const KeySwitch& ks);
 
-  //! Reduce plaintext space to a divisor of the original plaintext space
-  void reducePtxtSpace(long newPtxtSpace);
+    //! Reduce plaintext space to a divisor of the original plaintext space
+    void reducePtxtSpace(long newPtxtSpace);
 
-  // This method can be used to increase the plaintext space, but the
-  // high-order digits that you get this way are noise. Do not use it
-  // unless you know what you are doing.
-  void hackPtxtSpace(long newPtxtSpace) { ptxtSpace=newPtxtSpace; }
+    // This method can be used to increase the plaintext space, but the
+    // high-order digits that you get this way are noise. Do not use it
+    // unless you know what you are doing.
+    void hackPtxtSpace(long newPtxtSpace) { ptxtSpace=newPtxtSpace; }
 
-  void bumpNoiseBound(double factor) { noiseBound *= factor; }
+    void bumpNoiseBound(double factor) { noiseBound *= factor; }
 
-  void reLinearize(long keyIdx=0);
-          // key-switch to (1,s_i), s_i is the base key with index keyIdx
+    void reLinearize(long keyIdx=0);
+    // key-switch to (1,s_i), s_i is the base key with index keyIdx
 
-  void cleanUp();
-         // relinearize, then reduce, then drop special primes 
+    void cleanUp();
+    // relinearize, then reduce, then drop special primes
 
-  // void reduce() const;
+    // void reduce() const;
 
-  //! @brief Add a high-noise encryption of the given constant
-  void blindCtxt(const NTL::ZZX& poly);
+    //! @brief Add a high-noise encryption of the given constant
+    void blindCtxt(const NTL::ZZX& poly);
 
-  //! @brief Estimate the added noise 
-  NTL::xdouble modSwitchAddedNoiseBound() const;
+    //! @brief Estimate the added noise
+    NTL::xdouble modSwitchAddedNoiseBound() const;
 
-  //! @brief Modulus-switching up (to a larger modulus).
-  //! Must have primeSet <= s, and s must contain
-  //! either all the special primes or none of them.
-  void modUpToSet(const IndexSet &s);
+    //! @brief Modulus-switching up (to a larger modulus).
+    //! Must have primeSet <= s, and s must contain
+    //! either all the special primes or none of them.
+    void modUpToSet(const IndexSet &s);
 
-  //! @brief Modulus-switching down (to a smaller modulus).
-  //! mod-switch down to primeSet \intersect s, after this call we have
-  //! primeSet<=s. s must contain either all special primes or none of them
-  void modDownToSet(const IndexSet &s);
+    //! @brief Modulus-switching down (to a smaller modulus).
+    //! mod-switch down to primeSet \intersect s, after this call we have
+    //! primeSet<=s. s must contain either all special primes or none of them
+    void modDownToSet(const IndexSet &s);
 
-  //! @brief make the primeSet equal to newPrimeSet,
-  //! via modUpToSet and modDownToSet
-  void bringToSet(const IndexSet& s); 
+    //! @brief make the primeSet equal to newPrimeSet,
+    //! via modUpToSet and modDownToSet
+    void bringToSet(const IndexSet& s);
 
-  // Finding the "natural" state of a cipehrtext
-  double naturalSize() const; //! "natural size" is size before suqaring
-  IndexSet naturalPrimeSet() const; //! the corresponding primeSet
+    // Finding the "natural" state of a cipehrtext
+    double naturalSize() const; //! "natural size" is size before suqaring
+    IndexSet naturalPrimeSet() const; //! the corresponding primeSet
 
-  //! @brief drop all smallPrimes and specialPrimes, adding ctxtPrimes
-  //! as necessary to ensure that the scaled noise is above the
-  //! modulus-switching added noise term.
-  void dropSmallAndSpecialPrimes();
+    //! @brief drop all smallPrimes and specialPrimes, adding ctxtPrimes
+    //! as necessary to ensure that the scaled noise is above the
+    //! modulus-switching added noise term.
+    void dropSmallAndSpecialPrimes();
 
-  //! @brief returns the "capacity" of a ciphertext,
-  //! which is the log of the ratio of the modulus to the
-  //! noise bound
-  double capacity() const
-  {
-    if (noiseBound <= 1.0) 
-      return context.logOfProduct(getPrimeSet());
-    else
-      return context.logOfProduct(getPrimeSet()) - log(noiseBound);
-  }
+    //! @brief returns the "capacity" of a ciphertext,
+    //! which is the log of the ratio of the modulus to the
+    //! noise bound
+    double capacity() const;
 
-  //! @brief the capacity in bits, returned as an integer
-  long bitCapacity() const
-  {
-    return long(capacity()/log(2.0));
-  }
+    //! @brief the capacity in bits, returned as an integer
+    long bitCapacity() const;
 
-  //! @brief returns the log of the prime set
-  double logOfPrimeSet() const
-  {
-    return context.logOfProduct(getPrimeSet());
-  }
+    //! @brief returns the log of the prime set
+    double logOfPrimeSet() const;
 
 
 
-  //! @brief Special-purpose modulus-switching for bootstrapping.
-  //!
-  //! Mod-switch to an externally-supplied modulus. The modulus need not be in
-  //! the moduli-chain in the context, and does not even need to be a prime.
-  //! The ciphertext *this is not affected, instead the result is returned in
-  //! the zzParts std::vector, as a std::vector of ZZX'es.
-  //! Returns an extimate for the noise bound after mod-switching.
-  double rawModSwitch(std::vector<NTL::ZZX>& zzParts, long toModulus) const;
+    //! @brief Special-purpose modulus-switching for bootstrapping.
+    //!
+    //! Mod-switch to an externally-supplied modulus. The modulus need not be in
+    //! the moduli-chain in the context, and does not even need to be a prime.
+    //! The ciphertext *this is not affected, instead the result is returned in
+    //! the zzParts std::vector, as a std::vector of ZZX'es.
+    //! Returns an extimate for the noise bound after mod-switching.
+    double rawModSwitch(std::vector<NTL::ZZX>& zzParts, long toModulus) const;
 
-  //! @brief compute the power X,X^2,...,X^n
-  //  void computePowers(std::vector<Ctxt>& v, long nPowers) const;
+    //! @brief compute the power X,X^2,...,X^n
+    //  void computePowers(std::vector<Ctxt>& v, long nPowers) const;
 
-  //! @brief Evaluate the cleartext poly on the encrypted ciphertext
-  void evalPoly(const NTL::ZZX& poly);
-  ///@}
+    //! @brief Evaluate the cleartext poly on the encrypted ciphertext
+    void evalPoly(const NTL::ZZX& poly);
+    ///@}
 
-  //! @name Utility methods
-  ///@{
+    //! @name Utility methods
+    ///@{
 
-  void clear() { // set as an empty ciphertext
-    primeSet=context.ctxtPrimes;
-    parts.clear();
-    noiseBound = NTL::to_xdouble(0.0);
-  }
+    void clear(); // set as an empty ciphertext
 
-  //! @brief Is this an empty cipehrtext without any parts
-  bool isEmpty() const { return (parts.size()==0); }
+    //! @brief Is this an empty cipehrtext without any parts
+    bool isEmpty() const { return (parts.size()==0); }
 
-  //! @brief A canonical ciphertext has (at most) handles pointing to (1,s)
-  bool inCanonicalForm(long keyID=0) const {
-    if (parts.size()>2) return false;
-    if (parts.size()>0 && !parts[0].skHandle.isOne()) return false;
-    if (parts.size()>1 && !parts[1].skHandle.isBase(keyID)) return false;
-    return true;
-  }
-
-  //! @brief Would this ciphertext be decrypted without errors?
-  bool isCorrect() const {
-    NTL::ZZ q = context.productOfPrimes(primeSet);
-    return NTL::to_xdouble(q) > noiseBound*2;
-  }
-
-  const FHEcontext& getContext() const { return context; }
-  const FHEPubKey& getPubKey() const   { return pubKey; }
-  const IndexSet& getPrimeSet() const  { return primeSet; }
-  const long getPtxtSpace() const      { return ptxtSpace;}
-  const NTL::xdouble& getNoiseBound() const { return noiseBound; }
-  const NTL::xdouble& getRatFactor() const { return ratFactor; }
-  const long getKeyID() const;
-
-  bool isCKKS() const
-  { return (getContext().alMod.getTag()==PA_cx_tag); }
-
-  // Return r such that p^r = ptxtSpace
-  const long effectiveR() const {
-    long p = context.zMStar.getP();
-    for (long r=1, p2r=p; r<NTL_SP_NBITS; r++, p2r *= p) {
-      if (p2r == ptxtSpace) return r;
-      if (p2r > ptxtSpace) NTL::Error("ctxt.ptxtSpace is not of the form p^r");
+    //! @brief A canonical ciphertext has (at most) handles pointing to (1,s)
+    bool inCanonicalForm(long keyID=0) const {
+        if (parts.size()>2) return false;
+        if (parts.size()>0 && !parts[0].skHandle.isOne()) return false;
+        if (parts.size()>1 && !parts[1].skHandle.isBase(keyID)) return false;
+        return true;
     }
-    NTL::Error("ctxt.ptxtSpace is not of the form p^r");
-    return 0; // just to keep the compiler happy
-  }
+
+    //! @brief Would this ciphertext be decrypted without errors?
+    bool isCorrect() const;
+
+    const FHEcontext& getContext() const { return context; }
+    const FHEPubKey& getPubKey() const   { return pubKey; }
+    const IndexSet& getPrimeSet() const  { return primeSet; }
+    const long getPtxtSpace() const      { return ptxtSpace;}
+    const NTL::xdouble& getNoiseBound() const { return noiseBound; }
+    const NTL::xdouble& getRatFactor() const { return ratFactor; }
+    const long getKeyID() const;
+
+    bool isCKKS() const;
+
+    // Return r such that p^r = ptxtSpace
+    const long effectiveR() const;
 
 
-  //! @brief Returns log(noiseBound) - log(q)
-  double log_of_ratio() const {
-    double logNoise = (getNoiseBound()<=0.0)? -DBL_MAX : log(getNoiseBound());
-    double logMod = empty(getPrimeSet())? -DBL_MAX : context.logOfProduct(getPrimeSet());
-    return logNoise - logMod;
-  }
-  ///@}
-  friend std::istream& operator>>(std::istream& str, Ctxt& ctxt);
-  friend std::ostream& operator<<(std::ostream& str, const Ctxt& ctxt);
-  
-  //Raw IO
-  void write(std::ostream& str) const;
-  void read(std::istream& str);
+    //! @brief Returns log(noiseBound) - log(q)
+    double log_of_ratio() const;
 
-  // scale up c1, c2 so they have the same ratFactor
-  static void equalizeRationalFactors(Ctxt& c1, Ctxt &c2,
-                      std::pair<long,long> f=std::pair<long,long>(0,0));
+    ///@}
+    friend std::istream& operator>>(std::istream& str, Ctxt& ctxt);
+    friend std::ostream& operator<<(std::ostream& str, const Ctxt& ctxt);
+
+    //Raw IO
+    void write(std::ostream& str) const;
+    void read(std::istream& str);
+
+    // scale up c1, c2 so they have the same ratFactor
+    static void equalizeRationalFactors(Ctxt& c1, Ctxt &c2,
+                                        std::pair<long,long> f=std::pair<long,long>(0,0));
 };
 
 
@@ -643,28 +605,28 @@ void incrementalProduct(std::vector<Ctxt>& v);
 
 void innerProduct(Ctxt& result, const std::vector<Ctxt>& v1, const std::vector<Ctxt>& v2);
 inline Ctxt innerProduct(const std::vector<Ctxt>& v1, const std::vector<Ctxt>& v2)
-{ 
-  Ctxt ret(v1[0].getPubKey());
-  innerProduct(ret, v1, v2); return ret; 
+{
+    Ctxt ret(v1[0].getPubKey());
+    innerProduct(ret, v1, v2); return ret;
 }
 
 //! Compute the inner product of a vectors of ciphertexts and a constant vector
 void innerProduct(Ctxt& result, const std::vector<Ctxt>& v1,
-                                const std::vector<DoubleCRT>& v2);
+                  const std::vector<DoubleCRT>& v2);
 inline Ctxt innerProduct(const std::vector<Ctxt>& v1,
                          const std::vector<DoubleCRT>& v2)
-{ 
-  Ctxt ret(v1[0].getPubKey());
-  innerProduct(ret, v1, v2); return ret; 
+{
+    Ctxt ret(v1[0].getPubKey());
+    innerProduct(ret, v1, v2); return ret;
 }
 
 void innerProduct(Ctxt& result, const std::vector<Ctxt>& v1,
-                                const std::vector<NTL::ZZX>& v2);
+                  const std::vector<NTL::ZZX>& v2);
 inline Ctxt innerProduct(const std::vector<Ctxt>& v1,
                          const std::vector<NTL::ZZX>& v2)
-{ 
-  Ctxt ret(v1[0].getPubKey());
-  innerProduct(ret, v1, v2); return ret; 
+{
+    Ctxt ret(v1[0].getPubKey());
+    innerProduct(ret, v1, v2); return ret;
 }
 
 //! print to cerr some info about ciphertext
@@ -672,12 +634,12 @@ void CheckCtxt(const Ctxt& c, const char* label);
 
 /**
  * @brief Extract the mod-p digits of a mod-p^r ciphertext.
- * 
+ *
  * extractDigits returns in the slots of digits[j] the j'th-lowest digits
  * from the integers in the slots of the input. Namely, the i'th slot of
  * digits[j] contains the j'th digit in the p-base expansion of the integer
  * in the i'th slot of the *this.
- * 
+ *
  * If r==0 then it is set to c.effectiveR(). It is assumed that the slots
  * of *this contains integers mod p^r, i.e., that only the free terms are
  * nonzero. If that assumptions does not hold then the result will not be
@@ -697,9 +659,9 @@ void extractDigits(std::vector<Ctxt>& digits, const Ctxt& c, long r=0);
 inline void
 extractDigits(std::vector<Ctxt>& digits, const Ctxt& c, long r, bool shortCut)
 {
-  if (shortCut)
-    std::cerr << "extractDigits: the shortCut flag is disabled\n";
-  extractDigits(digits, c, r);
+    if (shortCut)
+        std::cerr << "extractDigits: the shortCut flag is disabled\n";
+    extractDigits(digits, c, r);
 }
 
 inline void Ctxt::extractBits(std::vector<Ctxt>& bits, long nBits2extract)
@@ -711,7 +673,7 @@ inline void Ctxt::extractBits(std::vector<Ctxt>& bits, long nBits2extract)
 // extendExtractDigits assumes that the slots of *this contains integers mod
 // p^{r+e} i.e., that only the free terms are nonzero. (If that assumptions
 // does not hold then the result will not be a valid ciphertext anymore.)
-// 
+//
 // It returns in the slots of digits[j] the j'th-lowest digits from the
 // integers in the slots of the input. Namely, the i'th slot of digits[j]
 // contains the j'th digit in the p-base expansion of the integer in the i'th
